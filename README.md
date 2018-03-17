@@ -1,1 +1,2 @@
-lumos
+# Automated testing system (Windows + MySQL)
+

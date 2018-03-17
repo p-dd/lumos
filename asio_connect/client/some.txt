@@ -1,0 +1,53 @@
+		
+talk_to_db.cpp
+function on_send
+send ext_cls with prepared statements		
+		MYSQL_BIND param[11];
+		memset (param, 0, sizeof (param)); // zero the structures 
+
+		MYSQL_STMT *stmt;
+		my_bool true_var = true;
+		param[0].buffer_type = MYSQL_TYPE_LONG;				param[0].is_unsigned = 1;
+		param[1].buffer_type = MYSQL_TYPE_LONG;				param[1].is_unsigned = 1;
+		param[2].buffer_type = MYSQL_TYPE_LONG;				param[2].is_unsigned = 1;
+		param[3].buffer_type = MYSQL_TYPE_MEDIUM_BLOB;
+		param[4].buffer_type = MYSQL_TYPE_MEDIUM_BLOB;										param[4].is_null = &true_var;
+		param[5].buffer_type = MYSQL_TYPE_LONGLONG;			param[5].is_unsigned = 1;
+		param[6].buffer_type = MYSQL_TYPE_LONGLONG;			param[6].is_unsigned = 1;
+		param[7].buffer_type = MYSQL_TYPE_LONG;				param[7].is_unsigned = 1;
+		param[8].buffer_type = MYSQL_TYPE_MEDIUM_BLOB;										param[8].is_null = &true_var;
+		param[9].buffer_type = MYSQL_TYPE_LONG;				param[9].is_unsigned = 1;
+		param[10].buffer_type = MYSQL_TYPE_LONG;			param[10].is_unsigned = 1;
+		sql << "call insext(?,?,?,?,?,?,?,?,?,?,?);";
+		stmt = mysql_stmt_init (con);
+		if (stmt == NULL) {
+			printf ("Could not initialize statement handler");
+			system ("pause");
+		}
+
+		// Prepare the statement
+		if (mysql_stmt_prepare (stmt, sql.str ().c_str (), sql.str ().size ()) != 0) {
+			printf ("Could not prepare statement");
+			system ("pause");
+		}
+		clock_t be = clock ();
+		param[0].buffer = (void *)&a[i];
+		param[1].buffer = (void *)&b[i];
+		param[2].buffer = (void *)&c[i];
+		param[3].buffer = (void *)&mes;			param[3].length = &len_mes;
+		param[5].buffer = (void *)&a[i];
+		param[6].buffer = (void *)&a[i];
+		param[7].buffer = (void *)&b[i];
+		param[9].buffer = (void *)&c[i];
+		param[10].buffer = (void *)&c[i];
+
+		if (mysql_stmt_bind_param (stmt, param) != 0) {
+			printf ("%s\n", mysql_error (con));
+			printf ("Could not bind parameters");
+			system ("pause");
+		}
+
+		if (mysql_stmt_execute (stmt) != 0) {
+			printf ("Could not execute statement");
+			system ("pause");
+		}
