@@ -37,10 +37,13 @@ namespace tester {
 
 	// class solution
 	
-	solution::solution(id id_sol_, id id_user_, id id_problem_, id id_course_, text & code_, binary_ptr bin_, compiler_ptr sol_compiler_, bool extcls_, bool parcls_)
-		: id_user(id_user_), id_problem(id_problem_), id_course(id_course_), id_sol(id_sol_), code(code_), sol_compiler(sol_compiler_), extcls(extcls_), parcls(parcls_),
+	solution::solution(id id_sol_, id id_user_, id id_problem_, id id_course_, text & code_, binary_ptr bin_, compiler_ptr sol_compiler_, bool extcls_, bool parcls_, bool ischecker_)
+		: id_user(id_user_), id_problem(id_problem_), id_course(id_course_), id_sol(id_sol_), code(code_), sol_compiler(sol_compiler_), extcls(extcls_), parcls(parcls_), ischecker(ischecker_),
 		compiled_flag (bin_ == nullptr ? compiled::NO : (bin_->size() == 0 ? compiled::CE : compiled::OK))
 	{
+		if (!ischecker) {
+			code = tester::all_prob[id_problem]->get_before_code() + code;
+		}
 		(bin_ == nullptr) ? bin.reset (new binary) : bin = bin_;
 	}
 

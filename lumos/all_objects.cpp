@@ -22,13 +22,20 @@ namespace tester {
 	problem_ptr problems::operator[] (id index)
 	{
 		auto it = all.find (index);		
-		problem_ptr & tmp = (it == all.end ()) ? nullptr : it->second;
-		if (tmp == nullptr) {
-			tmp = db->get_problem (index);
-			all.insert (std::make_pair (index, tmp));
+		problem_ptr & cur = (it == all.end ()) ? nullptr : it->second;
+		if (cur == nullptr) 
+		{
+			cur = db->get_problem (index);
+			all.insert (std::make_pair (index, cur));
 		}
-		return tmp;
+		else 
+		{
+			if (db->get_problem_timestamp(index) != cur->get_timestamp())
+			cur = db->get_problem(index);
+		}
+		return cur;
 	}
+
 	solution_ptr solutions::operator[] (id index)
 	{
 		auto it = all.find (index);

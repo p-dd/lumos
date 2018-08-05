@@ -149,6 +149,45 @@ unsigned long long mysql_bitset_to_long (unsigned char * s, int len)
 	return res;
 }
 
+tester::text talk_to_db::get_problem_timestamp(tester::id index)
+{
+	std::cout << "start: " << __FUNCSIG__ << std::endl;
+	mtx_con.lock();
+	std::stringstream sql;
+	sql << "call get_tests_problem_timestamp(" << index << ");";
+	std::cout << "query: " << sql.str() << std::endl;
+	if (mysql_query(con, sql.str().c_str())) {
+		printf("%s\n", mysql_error(con)); fflush(stdout);
+		mysql_close(con);
+		//std::system ("pause");
+		exit(1);
+	}
+	MYSQL_RES * result;
+	result = mysql_store_result(con);
+	if (result == NULL) {
+		printf("%s\n", mysql_error(con)); fflush(stdout);
+		mysql_close(con);
+		//std::system ("pause");
+		exit(1);
+	}
+	printf("mysql_store_result done\n"); fflush(stdout);
+	MYSQL_ROW row;
+	row = mysql_fetch_row(result);
+	unsigned long * lengths;
+	lengths = mysql_fetch_lengths(result);
+	printf("mysql_fetch_row and mysql_fetch_lengths = %u done\n", *lengths); fflush(stdout);
+	tester::text latest_update;
+	if (row[0]) latest_update = tester::text(row[0], row[0] + lengths[0]);
+	
+	printf("check problem #%d, updated: %s\n", index, latest_update.c_str());
+
+	mysql_free_result(result);
+	mysql_next_result(con);
+	mtx_con.unlock();
+	std::cout << "finish: " << __FUNCSIG__ << std::endl;
+	return latest_update;
+}
+
 tester::problem_ptr talk_to_db::get_problem (tester::id index)
 {	
 	std::cout << "start: " << __FUNCSIG__ << std::endl;
@@ -175,7 +214,7 @@ tester::problem_ptr talk_to_db::get_problem (tester::id index)
 	unsigned long * lengths;
 	lengths = mysql_fetch_lengths (result);
 	printf("mysql_fetch_row and mysql_fetch_lengths = %u done\n", *lengths); fflush(stdout);
-	tester::text input_, output_, checker_code_, before_code_;
+	tester::text input_, output_, checker_code_, before_code_, latest_update;
 	tester::binary_ptr checker_bin_;
 	tester::test::fmt input_fmt_, output_fmt_;
 	std::wstring line_run_;
@@ -192,7 +231,10 @@ tester::problem_ptr talk_to_db::get_problem (tester::id index)
 	if (row[8]) num_proc_ = mysql_bitset_to_long ((unsigned char *)row[8], lengths[8]);
 	if (row[9]) num_thrd_ = mysql_bitset_to_long ((unsigned char *)row[9], lengths[9]);
 	if (row[10]) before_code_ = tester::text (row[10], row[10] + lengths[10]);
+	if (row[11]) latest_update = tester::text(row[11], row[11] + lengths[11]);
 	
+	printf("get problem #%d, updated: %s\n", index, latest_update.c_str());
+
 	mysql_free_result (result);
 	mysql_next_result (con);
 	result = mysql_store_result (con);
@@ -224,7 +266,8 @@ tester::problem_ptr talk_to_db::get_problem (tester::id index)
 	return tester::problem_ptr (
 		new tester::problem (index, input_, output_, input_fmt_, output_fmt_, time_limit_, memory_limit_, 
 							before_code_, line_run_, num_proc_, num_thrd_,
-							tests, tester::checker_ptr (new tester::checker (id_ch_, type_ch, tester::all_sol[sol_id])))
+							tests, tester::checker_ptr (new tester::checker (id_ch_, type_ch, tester::all_sol[sol_id])),
+							latest_update)
 		);
 }
 
@@ -263,14 +306,11 @@ tester::solution_ptr talk_to_db::get_solution (tester::id index)
 	tester::id id_user_(atoi(row[7]));
 	tester::id id_course_(atoi(row[8]));
 
-	if (!ischecker_) {
-		code_ = tester::all_prob[id_problem_]->get_before_code() + code_;
-	}
 	mysql_free_result (result);
 	mysql_next_result (con);
 	mtx_con.unlock ();
 	std::cout << "finish: " << __FUNCSIG__ << std::endl;
-	return tester::solution_ptr(new tester::solution(index, id_user_, id_problem_, id_course_, code_, bin_, tester::all_cm[id_cm_]/*, tester::all_prob[id_prob_]*/, extcls_, parcls_));
+	return tester::solution_ptr(new tester::solution(index, id_user_, id_problem_, id_course_, code_, bin_, tester::all_cm[id_cm_]/*, tester::all_prob[id_prob_]*/, extcls_, parcls_, ischecker_));
 }
 
 tester::compiler_ptr talk_to_db::get_compiler (tester::id index)

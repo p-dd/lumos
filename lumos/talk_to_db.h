@@ -38,6 +38,8 @@ public:
 	void on_send();
 	//friend talk_to_db & operator >> (talk_to_db & stream, tester::CLS & data);
 
+	tester::text get_problem_timestamp(tester::id index);
+
 	tester::problem_ptr get_problem (tester::id index);
 	tester::solution_ptr get_solution (tester::id index);
 	tester::compiler_ptr get_compiler (tester::id index);

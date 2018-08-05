@@ -178,10 +178,11 @@ namespace tester {
 		fs::path path_bin;
 		bool extcls;
 		bool parcls;
+		bool ischecker;
 
 		id id_user, id_problem, id_course;
 	public:
-		solution(id id_sol_, id id_user_, id id_problem_, id id_course_, text & code_, binary_ptr bin_, compiler_ptr sol_compiler_, bool extcls_, bool parcls_);
+		solution(id id_sol_, id id_user_, id id_problem_, id id_course_, text & code_, binary_ptr bin_, compiler_ptr sol_compiler_, bool extcls_, bool parcls_, bool ischecker_);
 
 		text get_compile_message () { return compile_message; }
 		compiler_ptr get_compiler () { return sol_compiler; }
@@ -234,33 +235,37 @@ namespace tester {
 		std::wstring line_run;
 		text before_code;
 		unsigned long long num_proc, num_thrd;
+		text latest_update;
 	public:
 		// time_limit_ in milli seconds (1e-3 sec)
-		problem (id id_prob_, fs::path input_, fs::path output_, test::fmt input_fmt_, test::fmt output_fmt_, size_t time_limit_, size_t memory_limit_, 
-			text & before_code_, std::wstring line_run_, unsigned long long num_proc_, unsigned long long num_thrd_, tests_ptr tests_, checker_ptr prob_checker_)
-			: id_prob (id_prob_), time_limit (time_limit_ * mul_time), memory_limit (memory_limit_), 
-			before_code (before_code_), line_run (line_run_), num_proc (num_proc_), num_thrd (num_thrd_),
-			input (input_), output (output_), answer ("answer.txt"), tests (tests_), 
-			input_fmt (input_fmt_), output_fmt (output_fmt_), prob_checker (prob_checker_)
+		problem(id id_prob_, fs::path input_, fs::path output_, test::fmt input_fmt_, test::fmt output_fmt_, size_t time_limit_, size_t memory_limit_,
+			text & before_code_, std::wstring line_run_, unsigned long long num_proc_, unsigned long long num_thrd_, tests_ptr tests_, checker_ptr prob_checker_, text latest_update)
+			: id_prob(id_prob_), time_limit(time_limit_ * mul_time), memory_limit(memory_limit_),
+			before_code(before_code_), line_run(line_run_), num_proc(num_proc_), num_thrd(num_thrd_),
+			input(input_), output(output_), answer("answer.txt"), tests(tests_),
+			input_fmt(input_fmt_), output_fmt(output_fmt_), prob_checker(prob_checker_),
+			latest_update(latest_update)
 		{};
 
-		fs::path & path_input () { return input; }
-		fs::path & path_output () { return output; }
-		fs::path & path_answer () { return answer; }
+		fs::path & path_input() { return input; }
+		fs::path & path_output() { return output; }
+		fs::path & path_answer() { return answer; }
 
-		LONGLONG get_time_limit () { return time_limit; }
-		size_t get_memory_limit () { return memory_limit; }
-		std::wstring & get_line_run () { return line_run; }
-		unsigned long long  get_num_proc () { return num_proc; }
-		unsigned long long  get_num_thrd () { return num_thrd; }
-		test & get_test (id i) { return (*tests)[i]; }
-		id id_begin_test () { return 1; }
-		id id_end_test () { return tests->size (); }
+		LONGLONG get_time_limit() { return time_limit; }
+		size_t get_memory_limit() { return memory_limit; }
+		std::wstring & get_line_run() { return line_run; }
+		unsigned long long  get_num_proc() { return num_proc; }
+		unsigned long long  get_num_thrd() { return num_thrd; }
+		test & get_test(id i) { return (*tests)[i]; }
+		id id_begin_test() { return 1; }
+		id id_end_test() { return tests->size(); }
 
-		test::fmt get_input_fmt () { return input_fmt; }
-		test::fmt get_output_fmt () { return output_fmt; }
-		checker_ptr get_checker () { return prob_checker; }
-		text get_before_code () { return before_code; }
+		test::fmt get_input_fmt() { return input_fmt; }
+		test::fmt get_output_fmt() { return output_fmt; }
+		checker_ptr get_checker() { return prob_checker; }
+		text get_before_code() { return before_code; }
+
+		text get_timestamp() { return latest_update; }
 
 		friend talk_to_db & operator >> (talk_to_db & stream, problem & data);
 	};
